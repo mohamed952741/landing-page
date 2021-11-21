@@ -29,17 +29,20 @@ const navList = document.querySelector('ul');
  * Start Helper Functions
  * 
 */
-
+//Factory returning an item to be appended to the Fragment
+function itemFactory(section){
+        const item = document.createElement('li');
+        const sectionId = section.id;
+        const sectionNav = section.getAttribute('data-nav');
+        item.innerHTML = `<a class = 'menu__link' id ='ar-${sectionId}'>${sectionNav}</a>`;
+        return item;
+}
 //returns a fragment that includes all list items found in the HTML.
-
 function navFragment(sections){
     const fragment = document.createDocumentFragment();
     for(const section of sections){
-        const listItem = document.createElement('li');
-        const sectionID = section.id;
-        const sectionName = section.getAttribute('data-nav');
-        listItem.innerHTML = `<a class = 'menu__link' id ='n-${sectionID}'>${sectionName}</a>`;
-        fragment.appendChild(listItem);
+        const item=itemFactory(section);
+        fragment.appendChild(item);
     }
     return fragment;
 }
@@ -67,30 +70,32 @@ function buildNavBar(){
 
 // Add class 'active' to section when near top of viewport
 function setSectionActive(){
-    const options = {
-        root : null,
-        threshold : 0.1949,
-        rootMargin : '-200px 0px -200px 0px'
-    };
-    const observer = new IntersectionObserver(function(entries, observer){
-        for(const entry of entries){
-            const arID = `n-${entry.target.id}`;
-            const ar = document.getElementById(arID);
-            if(entry.isIntersecting){
-                entry.target.classList.add('your-active-class');
-                ar.classList.add('active-nav');
-                
-            }
-            else{
-                entry.target.classList.remove('your-active-class');
-                ar.classList.remove('active-nav');
-            }
+    const sections2 = document.querySelectorAll("section");
+    window.addEventListener("scroll", () => {
+        if(window.pageYOffset>374){
+        let current = "";
+      sections2.forEach((section) => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        if (window.pageYOffset >= sectionTop - sectionHeight / 3) {
+            if (typeof(section.getAttribute("id")) != "undefined"){
+            current = section.getAttribute("id");}
         }
-    }, options);
+      });
+      if (typeof(current) != "undefined"){
+      sections2.forEach((section) => {
 
-    for (const section of sections) {
-        observer.observe(section);
-    }
+        if (section.getAttribute("id") == current) {
+                  section.classList.add('your-active-class');
+                  document.getElementById("ar-"+section.getAttribute("id")).classList.add('active-nav');
+              }
+              else {
+                  section.classList.remove('your-active-class');
+                  document.getElementById("ar-"+section.getAttribute("id")).classList.remove('active-nav');
+              }
+          });}
+    }});
+    
 }
 
 // Scroll to anchor ID using scrollTO event
@@ -100,7 +105,7 @@ function scroll(){
         const ar = sectionClicked.target;
 
         if(ar.nodeName === 'A'){
-            const sectionID = ar.id.slice(2);
+            const sectionID = ar.id.slice(3);
             const sectionScrolled = document.getElementById(sectionID);
             window.scrollTo({
                 top: findPosition(sectionScrolled),
